@@ -178,15 +178,23 @@ conditions.  Here's an example of a good template:
 	      
 	  </TMPL_LOOP>
 
-	  <!-- For future pagination feature -->
-	  <p>
-	  <TMPL_IF NAME="prev">
-	  	<a href="<TMPL_VAR NAME="prev">">Previous</a>
-	  </TMPL_IF>
+	  <!-- For pagination -->
+	  <form action="<TMPL_VAR NAME="script_name">" method="GET">
+	  <TMPL_LOOP NAME="search_fields">
+		  <input type="hidden" name="<TMPL_VAR NAME="name">" 
+			  value="<TMPL_VAR NAME="value">">
+	  </TMPL_LOOP>
+
+	  <input type="hidden" name="cur_page" value="<TMPL_VAR NAME="cur_page">">
+	  <p>Show <input type="text" name="results_per_page" 
+		  value="<TMPL_VAR NAME="results_per_page">" size="3"> results per page</p>
+
+	  <p><TMPL_IF NAME="prev">
+		  <input type="submit" name="prev" value="Previous"> &nbsp;</TMPL_IF>
 	  <TMPL_IF NAME="next">
-	  	<a href="<TMPL_VAR NAME="next">">Next</a>
-	  </TMPL_IF>
+		  <input type="submit" name="next" value="Next"></TMPL_IF>
 	  </p>
+	  </form>
 
       <TMPL_ELSE>
           <!-- Errors for the overall search -->
@@ -223,77 +231,52 @@ process.
 
 =head1 PAGINATION
 
-This is not yet implemented, but the API for using it is laied out already.  You should 
-start using this API right away so that things don't break when pagination is implemented.  
+Paging data tends to force certain structures on the templates. I'm not happy with it, 
+but I don't see a way out of it without disallowing paging completely.  I encrouage 
+anyone who can to come up with a more flexible and elegant solution.  Until then, 
+we're stuck with the current implementation.
 
-First, you pass in the parameters of 'results_per_page', 'max_results', and 'page_number' 
-into new().  Second, your template should have a TMPL_VAR for 'prev' and 'next'.  You 
-can enclose them in TMPL_IF statements so they don't show up when they aren't needed.  See 
-the template example above for how to do this.  Third, you need to pass the webserver path 
-to the script via the 'script_name' option (on Apache, you can get this with 
-$ENV{SCRIPT_NAME}).
+In your template, you need to place a new form that will call the next page.  This form 
+will take TMPL_LOOP params named "search_fields containing input fields.  These are filled 
+with the data you passed as the search terms.
 
-The CGI must accept a few parameters in order to implement paging.  Fields being searched for 
-must be given the exact same name that they are passed in as.  For example, say you have a 
-CGI that is called with these name=value parameters:
+	  <form action="<TMPL_VAR NAME="script_name">" method="POST">
+	  <TMPL_LOOP NAME="search_fields">
+		  <input type="hidden" name="<TMPL_VAR NAME="name">" 
+			  value="<TMPL_VAR NAME="value">">
+	  </TMPL_LOOP>
 
-  first_name = 'Larry'
-  last_name =  'Wall'
+If you want to let users change the search options, you could put the options 
+into a text field instead, if you so choose.
 
-In your search options (and consequently, your database fields description), there must be 
-parameters named exactly 'first_name' and 'last_name'.  This is because the pagination 
-feature will create a GET-encoded link that will contain the name of each option in the 
-search fields.
+Next, we define what the current page number is, how many results we want to 
+see per page, and a next and previous button.  Which button is pressed will determine 
+if we go forward or back.
 
-The other options you need to accept is 'RESULTS_PER_PAGE' and 'PAGE_NUM'.  These 
-corrispond to the (lowercase) options that are passed to new().
+  <input type="hidden" name="cur_page" value="<TMPL_VAR NAME="cur_page">">
+  <p>Show <input type="text" name="results_per_page" 
+  	value="<TMPL_VAR NAME="results_per_page">" size="3"> results per page</p>
 
-To tie our example together with the paging options, and assumeing we are on page 2 and 
-want 25 results per page, your CGI script will be called like this for getting the next page:
-
-  /path/to/script.cgi?first_name=Larry&last_name=Wall&RESULTS_PER_PAGE=25&PAGE_NUM=3
-
-We would use these search options:
-
-  my %SEARCH = (
-  	first_name  => [ param('first_name'), \&WORD ],  # Use whatever validator you need
-	last_name   => [ param('last_name'),  \&WORD ], 
-  );
-
-And these database fields (among any others):
-
-  my @DB_FIELDS = (
-  	[ 'first_name', \&WORD,  1 ], # Again, use whatever validator you need
-	[ 'last_name',  \&WORD,  1 ], 
-  );
-
-And we would pass these options to new() (among any other options you need):
-
-  my $search = CGI::Search->new(
-  	script_name        => $ENV{SCRIPT_NAME},   # Change for your web server
-	
-	# If there wasn't a 'RESULTS_PER_PAGE' or 'PAGE_NUM' param, then 
-	# those params will be undef and CGI::Search->new() will generate an error.
-	# So we need to put the '|| 0' after those options.  You can change '0' to 
-	# whatever default number you want, as long as it isn't undef.
-	#
-  	results_per_page   => param('RESULTS_PER_PAGE') || 0, 
-	max_results        => 0, 
-	page_number        => param('PAGE_NUM') || 0, 
-  );
-
-And we include these somewhere in our template:
-
-  <p>
-  <TMPL_IF NAME="prev">
-    <a href="<TMPL_VAR NAME="prev">">Previous</a> 
-  </TMPL_IF>
+  <p><TMPL_IF NAME="prev">
+	  <input type="submit" name="prev" value="Previous"> &nbsp;</TMPL_IF>
   <TMPL_IF NAME="next">
-    <a href="<TMPL_VAR NAME="next">">Next</a>
-  </TMPL_IF>
+	  <input type="submit" name="next" value="Next"></TMPL_IF>
   </p>
+  </form>
 
-Whew!
+In this case, the current page number is put into a hidden field, and the results per 
+page is coming from a text box which defaults to the current value of results_per_page 
+you passed to CGI::Search->new().
+
+To determine the current page, your script should do something like this:
+
+  my $PAGE_NUMBER = param('cur_page') || 0;
+  $PAGE_NUMBER++ if param('next');
+  $PAGE_NUMBER-- if param('prev');
+
+Notice that the 'cur_page' param is actually the value of the last page the user 
+was on.  If the user hit the 'next' button, we need to increment that value.  If 
+the user hit the 'previous' button, we decrement the value.
 
 =head1 USAGE
 
@@ -347,6 +330,20 @@ does an OR search.  Otherwise, it does AND.
 
 Optionally, you can pass a referance to a hash containing new search fields that 
 override the terms passed to new().
+
+=head2 get_prev_page
+
+  get_prev_page
+
+Returns the page number of the previous page or undef if we're on the first page.
+
+=head2 get_next_page
+
+  get_next_page
+
+Returns the page number of the next page.  Note that CGI::Search doesn't know if there 
+will be any results on the "next" page, so this will happily return a value for page 
+249 if a user clicks that much, even if the results stoped at page 7.
 
 =head2 errstr 
 
@@ -484,6 +481,32 @@ my $passed_search = sub
 	return $match;
 };
 
+#  $on_current_page->($entry_num);
+#  
+# Decide if the given entry number is before, on, or after the current page.  
+# Return values are:
+#
+# -1   Before current page
+# 0    On current page
+# 1    After current page
+# 
+my $on_current_page = sub 
+{
+	my $self      = shift;
+	my $entry_num = shift || 0;
+
+	my $results_per_page = $self->{results_per_page};
+	my $start            = $self->{start};
+	my $stop             = $self->{stop};
+
+	# if $results_per_page is 0, then show all results
+	return 0  if $results_per_page == 0;
+
+	return -1 if $entry_num < $start;
+	return 0  if( ($entry_num >= $start) && ($entry_num <= $stop) );
+	return 1;
+};
+
 # Searches the database and returns an array containing the results of the search.
 # 
 # This is where the fun is
@@ -495,9 +518,6 @@ my $search = sub
 	my $in_terms          = shift;
 	my $file              = $self->{db_file};
 	my $lock              = $self->{db_lock};
-	my $results_per_page  = $self->{results_per_page};
-	my $page_number       = $self->{page_number};
-	my $max_results       = $self->{max_results};
 	my $seperator         = $self->{db_seperator};
 	my @fields            = @{ $self->{db_fields} };
 
@@ -510,18 +530,25 @@ my $search = sub
 		flock(IN, LOCK_SH) or (($self->{errstr} = $!) && return);
 	}
 
+	my $entry_num = 0;
 	while(my $line = <IN>) {
 		chomp $line;
-
 		my @input = split /$seperator/, $line, scalar(@fields);
 
 		my $passed = $self->$passed_search(\@input, 
 			\%search_fields, $self->{db_fields}, $or_search);
+		
 		if($passed > 0) {
+			# Paging stuff
+			my $on_page = $self->$on_current_page($entry_num++);
+			last if $on_page > 0;
+			next if $on_page < 0;
+
 			my %data;
 			foreach my $i (0 .. $#input) {
 				$data{$fields[$i][0]} = $input[$i];
 			}
+
 			push @results, \%data;
 		}
 		elsif($passed < 0) {
@@ -562,6 +589,24 @@ my $result_template = sub
 	my @results = $self->$search($or_search, \%terms);
 	if(@results) {
 		$tmpl->param('results' => \@results);
+	
+
+		my @search_fields;
+		foreach my $i (keys %terms) {
+			my %field = (
+				name  => $i, 
+				value => $terms{$i}[0], 
+			);
+			push @search_fields, \%field;
+		}
+
+		$tmpl->param(search_fields    => \@search_fields);
+		$tmpl->param(results_per_page => $self->{results_per_page});
+		$tmpl->param(cur_page         => $self->{page_number});
+		$tmpl->param(script_name      => $self->{script_name});
+		$tmpl->param('prev'      => $self->{'prev'});
+		$tmpl->param('next'      => $self->{'next'});
+
 	}
 	else {
 		$tmpl->param('error' => $self->{errstr});
@@ -682,10 +727,11 @@ sub new
 	$self->{db_lock}          = defined($input{db_lock})      ? $input{db_lock}      : 1; 
 	$self->{db_seperator}     = defined($input{db_seperator}) ? $input{db_seperator} : '\|'; 
 	$self->{db_fields}        = $input{db_fields}         || undef; 
-	$self->{results_per_page} = $input{results_per_page}  || 0; 
-	$self->{max_results}      = $input{max_results}       || 0; 
-	$self->{page_number}      = $input{page_number}       || 0; 
 	$self->{search_fields}    = $input{search_fields}     || undef; 
+
+	$self->{results_per_page} = $input{results_per_page}  || 0;
+	$self->{max_results}      = $input{max_results}       || 0;
+	$self->{page_number}      = $input{page_number}       || 0;
 
 	# HTML::Template options
 	$self->{template}           = $input{template}           || 
@@ -713,6 +759,21 @@ sub new
 	die("Failed to validate max_results") 
 		unless (INTEGER($self->{max_results}))[0];
 
+	my $start = $self->{results_per_page} * $self->{page_number};
+	my $stop  = $self->{results_per_page} ? ($start + $self->{results_per_page} - 1) : 0;
+
+	$self->{start} = $start;
+	$self->{stop}  = $stop;
+
+	if($self->{results_per_page}) {
+		my $prev = $self->{page_number} - 1;
+		my $next = $self->{page_number} + 1;
+
+		$self->{'prev'} = 1 if($prev >= 0);
+		$self->{'next'} = 1 if($next);
+	}
+
+	$self->{errstr} = '';
 
 	return $self;
 }
@@ -737,6 +798,16 @@ sub result
 	return (wantarray ? 
 		$self->$search($or_search, \%terms) : 
 		$self->$result_template($or_search, \%terms));
+}
+
+sub get_prev_page 
+{
+	return $_[0]->{prev};
+}
+
+sub get_next_page 
+{
+	return $_[0]->{'next'};
 }
 
 sub errstr 

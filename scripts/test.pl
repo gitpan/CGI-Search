@@ -18,10 +18,10 @@ my @DB_FIELDS    = (
 	[ 'num2',   \&BLOB,    1 ], 
 );
 
-# Paging options (not currently supported).  All are automatically verfied as a $NUMBER
-my $RESULTS_PER_PAGE = 25;
+# Paging options.  All are automatically verfied as an INTEGER
+my $RESULTS_PER_PAGE = 5;
 my $MAX_RESULTS      = 0;  # Infinate
-my $PAGE_NUMBER      = 0;
+my $PAGE_NUMBER      = 1;
 
 # Search options
 my %SEARCH           = (
@@ -45,11 +45,16 @@ my $search = CGI::Search->new(
 
 print "Done\nResults . . . \n";
 
-my $results = $search->result(1) or die("Error: " . $search->errstr);
+my @results = $search->result(1) or die("Error: " . $search->errstr);
 
 print "\nDone\n";
 print "Data:\n\n";
 
-#print Data::Dumper->Dumper(\@results);
-$results->output(print_to => *STDOUT);
+print Data::Dumper->Dumper(\@results);
+#$results->output(print_to => *STDOUT);
+
+my $next = $search->get_next_page();
+my $prev = $search->get_prev_page();
+print "Next page: ", $next, "\n" if defined($next);
+print "Prev page: ", $prev, "\n" if defined($prev);
 
