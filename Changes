@@ -1,6 +1,11 @@
 Revision history for Perl module CGI::Search
 
 
-March 18, 2003
+0.2 -- March 18, 2003
+	- Caught a fatal error in 0.1 release due to insufficient testing.
+		As a result of the fix, the system-wide configuration 
+		file is no longer necessary.
+	
+0.1 -- March 18, 2003
 	- Cleaned up for public release
 

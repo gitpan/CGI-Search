@@ -24,7 +24,7 @@ foreach my $i (0 .. $#test) {
 	# 
 	no warnings;
 	my $search = CGI::Search->new( db_file => '/', template => '/', 
-		test_validator => \&validator);
+		test_validator => \&validator, file_cache_dir => '/tmp', );
 	ok(( $search->test_custom_validator( 
 			$test[$i][0]) )[1] eq $test[$i][1], 
 		"test$test[$i][1]");

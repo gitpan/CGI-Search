@@ -30,6 +30,7 @@ my $object = CGI::Search->new (
 	db_fields      => \@db_fields, 
 	search_fields  => \%search_fields, 
 	template       => '../test_data/test.tmpl', 
+	file_cache_dir => '/tmp', 
 );
 isa_ok ($object, 'CGI::Search');
 

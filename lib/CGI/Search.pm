@@ -692,7 +692,7 @@ sub new
 		die "Need a template file"; 
 	$self->{cache}              = $input{cache}              || 0; 
 	$self->{file_cache}         = defined($input{file_cache}) ? $input{file_cache} : 1; 
-	$self->{file_cache_dir}     = $input{file_cache_dir}     || $DEFAULT_CACHE_DIR; 
+	$self->{file_cache_dir}     = $input{file_cache_dir}; 
 	$self->{loop_context_vars}  = $input{loop_context_vars}  || 0; 
 	$self->{global_vars}        = $input{global_vars}        || 0; 
 	$self->{strict}             = defined($input{strict})     ? $input{strict}     : 1; 
@@ -700,6 +700,12 @@ sub new
 	# For testing -- don't use in a real program
 	$self->{test_validator}     = $input{test_validator};
 
+	if($self->{file_cache}) {
+		defined($self->{file_cache_dir}) or 
+			die "Using a file cache, but no file_cache_dir option specified\n";
+	}
+	else { $self->{file_cache_dir} = '/' }
+	
 	die("Failed to validate page_number") 
 		unless (INTEGER($self->{page_number}))[0];
 	die("Failed to validate results_per_page") 

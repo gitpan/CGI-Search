@@ -9,10 +9,6 @@ MODULE DEPENDENCIES
 Email::Valid is required for the e-mail validator.
 HTML::Template is needed for the template-able output.
 
-Another module, CGI::Search::Config is also required.  It contains 
-system-specific configuration information and is generated during 
-the 'perl Makefile.PL' phase of the installation.
-
 
 INSTALLATION
 
@@ -25,10 +21,6 @@ make test
 make install
 
 If you are on a windows box you should use 'nmake' rather than 'make'.
-
-During the 'perl Makefile.PL' stage, you will be asked a question about 
-the postion of the default cache dir.  This directory is used by HTML::Template's 
-file_cache option.
 
 
 SUPPORT
