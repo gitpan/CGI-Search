@@ -1,0 +1,7 @@
+TODO list for Perl module CGI::Search
+
+- Paging support
+- Reimplement INTEGER() using Regexp::Common::number (other validators, too?)
+- Complex searching via SQL-like syntax 
+	(field1 = term1 AND field2 = term2 OR field3 = term3)
+

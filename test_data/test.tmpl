@@ -1,0 +1,43 @@
+
+<html>
+<head>
+    <title>Search results</title>
+</head>
+<body bgcolor="#FFFFFF">
+
+    <TMPL_UNLESS NAME="error">
+        <h1>Search results</h1>
+
+	<TMPL_UNLESS NAME="results">
+	    <!-- Shows up if there were no results in the search -->
+	    <p>12345</p>
+	</TMPL_UNLESS>
+	  
+	<TMPL_LOOP NAME="results">
+	    <TMPL_UNLESS NAME="error">
+
+	        <!-- Show the fields from the database you wish to display -->
+	        <p><TMPL_VAR NAME="num1"></p>
+	        <p><TMPL_VAR NAME="text1"></p>
+	        <p><TMPL_VAR NAME="email"></p>
+	        <p>&nbsp;</p>
+	        <p>&nbsp;</p>
+		  
+	    <TMPL_ELSE>
+	        <!-- Errors within the search results -->
+	        <p>Error in database: <TMPL_VAR NAME="error"></p>
+		<p><TMPL_VAR NAME="error">
+	    </TMPL_UNLESS>
+	      
+	</TMPL_LOOP>
+
+    <TMPL_ELSE>
+        <!-- Errors for the overall search -->
+        <h1><TMPL_VAR NAME="error"></h1>
+
+	<p><TMPL_VAR NAME="errstr"></p>  <!-- "errstr" contains a specific error message -->
+    </TMPL_UNLESS>
+
+</body>
+</html>
+

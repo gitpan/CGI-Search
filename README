@@ -1,0 +1,59 @@
+CGI::Search
+-----------
+
+A simple way of searching a flat-text database for CGI scripts.
+
+
+MODULE DEPENDENCIES
+
+Email::Valid is required for the e-mail validator.
+HTML::Template is needed for the template-able output.
+
+Another module, CGI::Search::Config is also required.  It contains 
+system-specific configuration information and is generated during 
+the 'perl Makefile.PL' phase of the installation.
+
+
+INSTALLATION
+
+To install this package, change to the directory where you
+unarchived this distribution and type the following:
+
+perl Makefile.PL
+make
+make test
+make install
+
+If you are on a windows box you should use 'nmake' rather than 'make'.
+
+During the 'perl Makefile.PL' stage, you will be asked a question about 
+the postion of the default cache dir.  This directory is used by HTML::Template's 
+file_cache option.
+
+
+SUPPORT
+
+Please send bug reports (preferably with a patch attached) to tmurray@agronomy.org.
+
+
+AUTHOR
+
+	Timm Murray
+	CPAN ID: TMURRAY
+	tmurray@agronomy.org
+	http://www.agronomy.org
+
+
+COPYRIGHT
+
+Copyright 2003, American Society of Agronomy. All rights reserved.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of either:
+
+a) the GNU General Public License as published by the Free Software
+   Foundation; either version 2, or (at your option) any later
+   version, or
+
+b) the "Artistic License" which comes with Perl.
+
