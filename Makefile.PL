@@ -12,5 +12,7 @@ WriteMakefile(
     PREREQ_PM    => 	{
 	    			HTML::Template   => 0, 
 				Email::Valid     => 0, 
+				Compress::Zlib   => 0, 
+				IO::Zlib         => 0, 
     			}, 
 );

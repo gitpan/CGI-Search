@@ -1,6 +1,9 @@
 Revision history for Perl module CGI::Search
 
 
+0.5 -- May 21, 2003 
+	- Support for compressed database files
+
 0.4 -- March 25, 2003
 	- "other" field added to new()
 	- documentation cleaned up a bit

@@ -299,6 +299,8 @@ Constructor.  Takes the following options in the hash:
                     Be sure any special regex chars are escaped.
   db_fields         Referance to an array of arrays describing the fields in the flat-file.  
                     See DATABASE FIELDS.
+  db_compress       If true, the database will be decompressed using Compress::Zlib before 
+                    reading.
 
   # Search options
   search_fields     Referance to a hash of arrays describing the fields you need to search on.  
@@ -514,6 +516,31 @@ my $on_current_page = sub
 	return 1;
 };
 
+# Open a file for reading, optionally locking and decompressing
+# 
+my $open_file = sub {
+	my $self = shift;
+	my $file = shift || return;
+	
+	my $lock     = $self->{db_lock};
+	my $compress = $self->{db_compress};
+
+	my $fh;
+	open($fh, '<', $file) or (($self->{errstr} = $!) && return);
+	if($lock) {
+		use Fcntl qw(:DEFAULT :flock);
+		flock($fh, LOCK_SH) or (($self->{errstr} = $!) && return);
+	}
+
+	if($compress) { 
+		use IO::Zlib;
+		$fh = IO::Zlib->new($fh, "rb") 
+			or (($self->{errstr} = $!) && return);
+	}
+	
+	return $fh;
+};
+
 # Searches the database and returns an array containing the results of the search.
 # 
 # This is where the fun is
@@ -524,21 +551,16 @@ my $search = sub
 	my $or_search         = shift;
 	my $in_terms          = shift;
 	my $file              = $self->{db_file};
-	my $lock              = $self->{db_lock};
 	my $seperator         = $self->{db_seperator};
 	my @fields            = @{ $self->{db_fields} };
 
 	my %search_fields = $in_terms ? %{ $in_terms } : %{ $self->{search_fields} };
 	my @results;
 
-	open(IN, '<', $file) or (($self->{errstr} = $!) && return);
-	if($lock) {
-		use Fcntl qw(:DEFAULT :flock);
-		flock(IN, LOCK_SH) or (($self->{errstr} = $!) && return);
-	}
+	my $fh = $self->$open_file($file) or return;
 
 	my $entry_num = 0;
-	while(my $line = <IN>) {
+	while(my $line = <$fh>) {
 		chomp $line;
 		my @input = split /$seperator/, $line, scalar(@fields);
 
@@ -565,7 +587,7 @@ my $search = sub
 		}
 	}
 	
-	close(IN);
+	close($fh);
 
 	return @results;
 };
@@ -741,6 +763,7 @@ sub new
 	$self->{db_lock}          = defined($input{db_lock})      ? $input{db_lock}      : 1; 
 	$self->{db_seperator}     = defined($input{db_seperator}) ? $input{db_seperator} : '\|'; 
 	$self->{db_fields}        = $input{db_fields}         || undef; 
+	$self->{db_compress}      = $input{db_compress}       || undef;
 	$self->{search_fields}    = $input{search_fields}     || undef; 
 	$self->{other}            = $input{other}             || undef;
 
