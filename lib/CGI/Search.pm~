@@ -17,6 +17,8 @@ BEGIN {
 	);
 }
 
+use CGI::Search::Config;  # System-specific configuration info
+
 
 
 =head1 NAME

@@ -1,6 +1,13 @@
 Revision history for Perl module CGI::Search
 
 
+0.4 -- March 25, 2003
+	- "other" field added to new()
+	- documentation cleaned up a bit
+
+0.3 -- March 21, 2003 
+	- Paging implemented
+
 0.2 -- March 18, 2003
 	- Caught a fatal error in 0.1 release due to insufficient testing.
 		As a result of the fix, the system-wide configuration 
